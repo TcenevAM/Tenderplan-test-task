@@ -1,12 +1,13 @@
+using AuthenticationAPI.Data;
+using AuthenticationAPI.Helper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using TenderplanTestTask.Data;
 
-namespace TenderplanTestTask
+namespace AuthenticationAPI
 {
     public class Startup
     {
@@ -20,11 +21,16 @@ namespace TenderplanTestTask
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IRepository, LocalRepo>();
             services.AddControllers();
+            var authOptionsConfiguration = Configuration.GetSection("Auth");
+            services.Configure<AuthOptions>(authOptionsConfiguration);
+            services.AddCors();
+
+            services.AddSingleton<IRepository, LocalAccountsRepo>();
+            services.AddTransient<ITokenHelper, TokenHelper>();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = "TenderplanTestTask", Version = "v1"});
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "AuthenticationAPIAuthenticateAPI", Version = "v1"});
             });
         }
 
@@ -35,12 +41,14 @@ namespace TenderplanTestTask
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TenderplanTestTask v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuAuthenticationAPIthenticateAPI v1"));
             }
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            
+            app.UseCors(builder => builder.AllowAnyOrigin());
 
             app.UseAuthorization();
 

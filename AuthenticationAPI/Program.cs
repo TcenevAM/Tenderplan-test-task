@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace TenderplanTestTask
+namespace AuthenticationAPI
 {
     public class Program
     {
