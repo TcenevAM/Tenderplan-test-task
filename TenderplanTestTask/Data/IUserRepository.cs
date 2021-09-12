@@ -7,7 +7,7 @@ namespace TenderplanTestTask.Data
     {
         void AddBookToUser(int userId, int bookId);
         IEnumerable<Book> GetUserBooks(int userId);
-        void AddUser(User newUser);
+        void RegisterNewUser(User newUser);
         void SaveChanges();
     }
 }

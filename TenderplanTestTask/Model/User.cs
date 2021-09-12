@@ -6,6 +6,8 @@ namespace TenderplanTestTask.Model
     {
         public int Id { get; set; }
         public string Nickname { get; set; }
+        public string Password { get; set; }
+        public string RefreshToken { get; set; }
         public List<Book> Books { get; set; } = new List<Book>();
     }
 }

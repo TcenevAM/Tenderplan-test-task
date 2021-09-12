@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AuthOptions;
@@ -12,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using TenderplanTestTask.Data;
+using TenderplanTestTask.Profiles;
 
 namespace TenderplanTestTask
 {
@@ -29,7 +31,9 @@ namespace TenderplanTestTask
         {
             var authOptions = Configuration.GetSection("Auth").Get<AuthenticateOptions>();
             
-            services.AddDbContext<Context>(opt => opt.UseNpgsql(Configuration.GetConnectionString("LibraryConnection")));
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddDbContext<Context>(opt => 
+                opt.UseNpgsql(Configuration.GetConnectionString("LibraryConnection")));
             services.AddScoped<IBookRepository, BooksRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddControllers();

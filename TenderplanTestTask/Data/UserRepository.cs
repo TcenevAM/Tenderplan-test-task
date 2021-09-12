@@ -30,20 +30,19 @@ namespace TenderplanTestTask.Data
         public IEnumerable<Book> GetUserBooks(int userId)
         {
             var user = _context.Users.Find(userId);
-            _context.Entry(user).Collection(u => u.Books).Load();
             if (user == null)
-            {
                 throw new ArgumentException("Пользователя с таким Id не существует", "userId");
-            }
+            
+            _context.Entry(user).Collection(u => u.Books).Load();
 
             return user.Books;
         }
 
-        public void AddUser(User newUser)
+        public void RegisterNewUser(User newUser)
         {
             if (_context.Users.FirstOrDefault(u => u.Nickname == newUser.Nickname) != null)
             {
-                throw new ArgumentException("Пользователя с таким nickname-ом уже существует", "newUser");
+                throw new ArgumentException("Пользователь с таким nickname-ом уже существует", "newUser");
             }
             _context.Users.Add(newUser);
         }

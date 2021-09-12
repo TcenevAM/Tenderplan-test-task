@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TenderplanTestTask.Data;
+using TenderplanTestTask.Dtos;
 using TenderplanTestTask.Model;
 
 namespace TenderplanTestTask.Controllers
@@ -12,22 +15,22 @@ namespace TenderplanTestTask.Controllers
     public class UsersController : Controller
     {
         private readonly IUserRepository _repository;
+        private readonly IMapper _mapper;
         private int UserId => int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
-        public UsersController(IUserRepository repository)
+        public UsersController(IUserRepository repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
-        [Route("{userId:int}/books/add")]
         [Authorize]
-        [HttpPost]
-        public ActionResult AddBookToUser(int userId, int bookId)
+        [HttpPost("{userId:int}/books/add")]
+        public ActionResult AddBookToUser(int bookId)
         {
-            if (userId != UserId) return Unauthorized();
             try
             {
-                _repository.AddBookToUser(userId, bookId);
+                _repository.AddBookToUser(UserId, bookId);
                 _repository.SaveChanges();
                 return Ok();
             }
@@ -36,24 +39,25 @@ namespace TenderplanTestTask.Controllers
                 return BadRequest(e.Message);
             }
         }
-        [Route("{userId:int}/books")]
-        [HttpGet]
-        public ActionResult GetUserBooks()
+        
+        [HttpGet("{userId:int}/books")]
+        public ActionResult GetUserBooks(int userId)
         {
-            var books = _repository.GetUserBooks(UserId);
+            var books = _repository.GetUserBooks(userId);
             if (books != null)
             {
-                return Ok(_repository.GetUserBooks(UserId));   
+                var q = _mapper.Map<BookReadDto>(books.ToList()[0]);
+                return Ok(_mapper.Map<List<BookReadDto>>(books));
             }
             return BadRequest();
         }
 
-        [HttpPost]
-        public ActionResult AddNewUser(User newUser)
+        [HttpPost("register")]
+        public ActionResult AddNewUser(UserCreateDto newUser)
         {
             try
             {
-                _repository.AddUser(newUser);
+                _repository.RegisterNewUser(_mapper.Map<User>(newUser));
                 _repository.SaveChanges();
                 return Ok();
             }

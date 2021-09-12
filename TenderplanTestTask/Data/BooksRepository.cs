@@ -20,7 +20,8 @@ namespace TenderplanTestTask.Data
 
         public bool UpdateBook(Book newBook)
         {
-            var oldBook = _context.Books.Find(newBook.Id);
+            if (!_context.Books.Any()) return false;
+            var oldBook = _context.Books.Find(newBook);
             if (oldBook == null) return false;
             oldBook = newBook;
             _context.Books.Update(oldBook);

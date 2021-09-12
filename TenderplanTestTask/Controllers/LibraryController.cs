@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using TenderplanTestTask.Data;
+using TenderplanTestTask.Dtos;
 using TenderplanTestTask.Model;
 
 namespace TenderplanTestTask.Controllers
@@ -10,23 +12,23 @@ namespace TenderplanTestTask.Controllers
     public class LibraryController : Controller
     {
         private readonly IBookRepository _repository;
+        private readonly IMapper _mapper;
 
-        public LibraryController(IBookRepository repository)
+        public LibraryController(IBookRepository repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
-        [Route("books/update")]
-        [HttpPost]
-        public ActionResult<Book> AddBook(Book newBook)
+        [HttpPost("books/add")]
+        public ActionResult<Book> AddBook(BookCreateDto newBook)
         {
-            _repository.CreateBook(newBook);
+            _repository.CreateBook(_mapper.Map<Book>(newBook));
             _repository.SaveChanges();
             return Ok();
         }
         
-        [Route("books/add")]
-        [HttpPost]
+        [HttpPost("books/{id}/update")]
         public ActionResult<Book> UpdateBook(Book newBook)
         {
             if (!_repository.UpdateBook(newBook)) return BadRequest();
@@ -34,8 +36,7 @@ namespace TenderplanTestTask.Controllers
             return Ok();
         }
 
-        [Route("books/{id:int}")]
-        [HttpGet]
+        [HttpGet("books/{id:int}")]
         public ActionResult<Book> GetBookInfo(int id)
         {
             try
@@ -49,7 +50,7 @@ namespace TenderplanTestTask.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public ActionResult DeleteBook(int id)
         {
             if (_repository.DeleteBook(id))
@@ -61,8 +62,7 @@ namespace TenderplanTestTask.Controllers
             return BadRequest();
         }
 
-        [Route("find/{genre}")]
-        [HttpGet]
+        [HttpGet("find/{genre}")]
         public IEnumerable<Book> GetBooksByGenre(string genre)
         {
             return _repository.GetBooksByGenre(genre);

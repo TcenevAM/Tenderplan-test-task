@@ -1,4 +1,5 @@
-﻿using AuthenticationAPI.Data;
+﻿using System;
+using AuthenticationAPI.Data;
 using AuthenticationAPI.Helper;
 using AuthenticationAPI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,7 @@ namespace AuthenticationAPI.Controllers
             var jwt = _tokenHelper.GenerateJwt(account);
             var rt = _tokenHelper.GenerateRefreshToken();
             _repository.SetRefreshToken(account.Id, rt);
+            _repository.SaveChanges();
             return Ok(new
             {
                 access_token = jwt,
@@ -40,6 +42,7 @@ namespace AuthenticationAPI.Controllers
             var jwt = _tokenHelper.GenerateJwt(account);
             var rt = _tokenHelper.GenerateRefreshToken();
             _repository.SetRefreshToken(account.Id, rt);
+            _repository.SaveChanges();
             return Ok(new
             {
                 access_token = jwt,

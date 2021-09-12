@@ -3,6 +3,7 @@ using AuthenticationAPI.Helper;
 using AuthOptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,10 +25,12 @@ namespace AuthenticationAPI
         {
             services.AddControllers();
             var authOptionsConfiguration = Configuration.GetSection("Auth");
+            services.AddDbContext<Context>(opt => 
+                opt.UseNpgsql(Configuration.GetConnectionString("UsersConnection")));
             services.Configure<AuthenticateOptions>(authOptionsConfiguration);
             services.AddCors();
 
-            services.AddSingleton<IRepository, LocalAccountsRepo>();
+            services.AddScoped<IRepository, UsersRepository>();
             services.AddTransient<ITokenHelper, TokenHelper>();
             services.AddSwaggerGen(c =>
             {
