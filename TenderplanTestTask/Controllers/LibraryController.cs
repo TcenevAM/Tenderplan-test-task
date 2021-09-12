@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using TenderplanTestTask.Data;
 using TenderplanTestTask.Model;
@@ -8,25 +9,44 @@ namespace TenderplanTestTask.Controllers
     [Route("api/[controller]")]
     public class LibraryController : Controller
     {
-        private readonly IRepository _repository;
+        private readonly IBookRepository _repository;
 
-        public LibraryController(IRepository repository)
+        public LibraryController(IBookRepository repository)
         {
             _repository = repository;
         }
 
+        [Route("books/update")]
         [HttpPost]
-        public ActionResult<Book> AddOrUpdateBook(Book newBook)
+        public ActionResult<Book> AddBook(Book newBook)
         {
-            _repository.CreateOrUpdate(newBook);
+            _repository.CreateBook(newBook);
+            _repository.SaveChanges();
+            return Ok();
+        }
+        
+        [Route("books/add")]
+        [HttpPost]
+        public ActionResult<Book> UpdateBook(Book newBook)
+        {
+            if (!_repository.UpdateBook(newBook)) return BadRequest();
+            _repository.SaveChanges();
             return Ok();
         }
 
-        [Route("{id}")]
+        [Route("books/{id:int}")]
         [HttpGet]
-        public Book GetBookInfo(int id)
+        public ActionResult<Book> GetBookInfo(int id)
         {
-            return _repository.GetInfo(id);
+            try
+            {
+                var book = _repository.GetInfo(id);
+                return Ok(book);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpDelete]
@@ -34,6 +54,7 @@ namespace TenderplanTestTask.Controllers
         {
             if (_repository.DeleteBook(id))
             {
+                _repository.SaveChanges();
                 return Ok();
             }
 
