@@ -1,5 +1,6 @@
 using AuthenticationAPI.Data;
 using AuthenticationAPI.Helper;
+using AuthOptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +24,7 @@ namespace AuthenticationAPI
         {
             services.AddControllers();
             var authOptionsConfiguration = Configuration.GetSection("Auth");
-            services.Configure<AuthOptions>(authOptionsConfiguration);
+            services.Configure<AuthenticateOptions>(authOptionsConfiguration);
             services.AddCors();
 
             services.AddSingleton<IRepository, LocalAccountsRepo>();

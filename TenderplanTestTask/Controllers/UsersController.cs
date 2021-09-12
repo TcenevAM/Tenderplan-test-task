@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TenderplanTestTask.Data;
 using TenderplanTestTask.Model;
@@ -9,6 +12,7 @@ namespace TenderplanTestTask.Controllers
     public class UsersController : Controller
     {
         private readonly IUserRepository _repository;
+        private int UserId => int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
         public UsersController(IUserRepository repository)
         {
@@ -16,9 +20,11 @@ namespace TenderplanTestTask.Controllers
         }
 
         [Route("{userId:int}/books/add")]
+        [Authorize]
         [HttpPost]
         public ActionResult AddBookToUser(int userId, int bookId)
         {
+            if (userId != UserId) return Unauthorized();
             try
             {
                 _repository.AddBookToUser(userId, bookId);
@@ -32,12 +38,12 @@ namespace TenderplanTestTask.Controllers
         }
         [Route("{userId:int}/books")]
         [HttpGet]
-        public ActionResult GetUserBooks(int userId)
+        public ActionResult GetUserBooks()
         {
-            var books = _repository.GetUserBooks(userId);
+            var books = _repository.GetUserBooks(UserId);
             if (books != null)
             {
-                return Ok(_repository.GetUserBooks(userId));   
+                return Ok(_repository.GetUserBooks(UserId));   
             }
             return BadRequest();
         }

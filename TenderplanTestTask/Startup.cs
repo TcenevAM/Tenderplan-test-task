@@ -1,10 +1,16 @@
+using System.Collections.Generic;
+using System.Linq;
+using AuthOptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using TenderplanTestTask.Data;
 
 namespace TenderplanTestTask
@@ -21,6 +27,8 @@ namespace TenderplanTestTask
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var authOptions = Configuration.GetSection("Auth").Get<AuthenticateOptions>();
+            
             services.AddDbContext<Context>(opt => opt.UseNpgsql(Configuration.GetConnectionString("LibraryConnection")));
             services.AddScoped<IBookRepository, BooksRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
@@ -28,7 +36,40 @@ namespace TenderplanTestTask
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "TenderplanTestTask", Version = "v1"});
+                c.AddSecurityDefinition("Bearer",
+                    new OpenApiSecurityScheme() { In = ParameterLocation.Header,
+                        Description = "Please enter into field the word 'Bearer' following by space and JWT", 
+                        Name = "Authorization", Type = SecuritySchemeType.ApiKey });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {
+                        new OpenApiSecurityScheme()
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Name = "Bearer",
+                            In = ParameterLocation.Header
+                        },
+                        new List<string>()
+                    }
+                });
             });
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opt =>
+                {
+                    opt.RequireHttpsMetadata = false;
+                    opt.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        IssuerSigningKey = authOptions.GetSymmetricSecurityKey(authOptions.SecurityKey),
+                        ValidateIssuerSigningKey = true,
+                    };
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +86,7 @@ namespace TenderplanTestTask
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using AuthenticationAPI.Models;
+using AuthOptions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -11,16 +11,16 @@ namespace AuthenticationAPI.Helper
 {
     public class TokenHelper : ITokenHelper
     {
-        private IOptions<AuthOptions> _authOptions;
+        private IOptions<AuthenticateOptions> _authOptions;
 
-        public TokenHelper(IOptions<AuthOptions> authOptions)
+        public TokenHelper(IOptions<AuthenticateOptions> authOptions)
         {
             _authOptions = authOptions;
         }
         public string GenerateJwt(Account user)
         {
             var authParams = _authOptions.Value;
-            var securityKey = authParams.GetSymmetricSecurityKey();
+            var securityKey = authParams.GetSymmetricSecurityKey(authParams.SecurityKey);
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>()
@@ -38,7 +38,7 @@ namespace AuthenticationAPI.Helper
         public string GenerateRefreshToken()
         {
             var authParams = _authOptions.Value;
-            var securityKey = authParams.GetSymmetricRefreshKey();
+            var securityKey = authParams.GetSymmetricSecurityKey(authParams.RefreshKey);
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             
             var token = new JwtSecurityToken(expires: DateTime.Now.AddDays(authParams.RefreshKeyLifeTime),

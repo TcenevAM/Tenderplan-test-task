@@ -21,6 +21,13 @@ namespace AuthenticationAPI.Data
                 Nickname = "ytrewq",
                 Password = "123321",
                 RefreshToken = ""
+            },
+            new Account()
+            {
+                Id = 3,
+                Nickname = "user3",
+                Password = "123",
+                RefreshToken = ""
             }
         };
 
