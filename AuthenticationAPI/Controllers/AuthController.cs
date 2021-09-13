@@ -37,6 +37,7 @@ namespace AuthenticationAPI.Controllers
         [HttpPost("refresh")]
         public ActionResult Refresh(string refreshToken)
         {
+            if (!_tokenHelper.IsRefreshTokenValid(refreshToken)) return Unauthorized();
             var account = _repository.AuthenticateUser(refreshToken);
             if (account == null) return Unauthorized();
             var jwt = _tokenHelper.GenerateJwt(account);

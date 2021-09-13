@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Principal;
 using AuthenticationAPI.Models;
 using AuthOptions;
 using Microsoft.Extensions.Options;
@@ -44,6 +45,29 @@ namespace AuthenticationAPI.Helper
             var token = new JwtSecurityToken(expires: DateTime.Now.AddDays(authParams.RefreshKeyLifeTime),
                 signingCredentials: credentials);
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public bool IsRefreshTokenValid(string refreshToken)
+        {
+            try
+            {
+                var authParams = _authOptions.Value;
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var validationParameters = new TokenValidationParameters()
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = authParams.GetSymmetricSecurityKey(authParams.RefreshKey)
+                };
+
+                tokenHandler.ValidateToken(refreshToken, validationParameters, out _);
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
     }
 }

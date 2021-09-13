@@ -6,5 +6,6 @@ namespace AuthenticationAPI.Helper
     {
         string GenerateJwt(Account user);
         string GenerateRefreshToken();
+        bool IsRefreshTokenValid(string refreshToken);
     }
 }
